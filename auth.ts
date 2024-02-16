@@ -9,21 +9,22 @@ export const {
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      // may need to add scpoe for playlist creation and/or recommendations
       authorization:
-        "https://accounts.spotify.com/authorize?scope=user-top-read",
+        "https://accounts.spotify.com/authorize?scope=user-top-read playlist-modify-private",
     }),
   ],
   secret: process.env.SPOTIFY_CLIENT_SECRET,
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, user }) {
       if (account) {
+        token.id = user.id;
         token.accessToken = account.access_token;
       }
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
+      //@ts-ignore
+      session.user = token;
       return session;
     },
   },

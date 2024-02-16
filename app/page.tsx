@@ -1,7 +1,8 @@
+import { MySession } from "@/types";
 import { auth } from "../auth";
 
 export default async function Home() {
-  const tracks = await getTracks();
+  const tracks = await getTopTracks();
   const recommendations = await getRecommendations();
 
   return (
@@ -20,41 +21,35 @@ export default async function Home() {
   );
 }
 
-const getTracks = async () => {
+const getRecommendations = async () => {
+  const tracks = await getTopTracks();
+
+  // TODO: pass a comma separated list of selected tracks
+  const data = await fetchWithToken(
+    `recommendations?seed_artists=${tracks[0].artists[0].id}`
+  );
+
+  return data ? data.tracks : [];
+};
+
+const getTopTracks = async () => {
+  // TODO: Should fetch new set of tracks on request
+  const data = await fetchWithToken("me/top/tracks");
+  return data ? data.items : [];
+};
+
+const fetchWithToken = async (params: string) => {
   const session = await auth();
-  const res = await fetch("https://api.spotify.com/v1/me/top/tracks", {
+  const res = await fetch(`https://api.spotify.com/v1/${params}`, {
     headers: {
-      Authorization: `Bearer ${session.accessToken}`,
+      //@ts-ignore
+      Authorization: `Bearer ${session.user.accessToken}`,
     },
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch tracks");
+    throw new Error("Failed to fetch");
   }
 
-  const tracks = await res.json();
-
-  return tracks.items;
-};
-
-const getRecommendations = async () => {
-  const session = await auth();
-  const tracks = await getTracks();
-
-  const res = await fetch(
-    `https://api.spotify.com/v1/recommendations?seed_artists=${tracks[0].artists[0].id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-    }
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch tracks");
-  }
-
-  const recommendations = await res.json();
-
-  return recommendations;
+  return await res.json();
 };
