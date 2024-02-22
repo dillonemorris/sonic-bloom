@@ -1,10 +1,11 @@
 "use client";
 
-import { auth } from "@/auth";
-import { PlusIcon } from "@heroicons/react/16/solid";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
 import useSWR from "swr";
+import Image from "next/image";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { PlusIcon } from "@heroicons/react/16/solid";
+import { useSlideoverVisibilty } from "./Providers";
 
 type Track = {
   id: string;
@@ -15,6 +16,10 @@ type Track = {
 
 export const TrackList = () => {
   const tracks = useTopTracks();
+  const { open } = useSlideoverVisibilty();
+
+  // TODO: Pass to CreatePlaylistForm via context
+  const [selectedTracks, setSelectedTracks] = useState();
 
   return (
     <ul role="list" className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -22,7 +27,8 @@ export const TrackList = () => {
         <li key={track.id}>
           <button
             type="button"
-            className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            onClick={open}
+            className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
             <span className="flex min-w-0 flex-1 items-center space-x-3">
               <span className="block flex-shrink-0">
@@ -58,13 +64,10 @@ export const TrackList = () => {
 
 const useTopTracks = (): Track[] => {
   const fetchWithToken = useFetchWithToken();
-  // TODO: Offset should be (prev offset + (12 - selectedTracks.length))
-  const { data, error } = useSWR(
-    "me/top/tracks?offset=12&limit=12",
-    fetchWithToken
-  );
-  console.log(data, error);
-  return data
+  // TODO: Make offset dynamic
+  const { data } = useSWR("me/top/tracks?offset=0&limit=16", fetchWithToken);
+
+  return data?.items
     ? data.items.map((track: any) => {
         const { images } = track.album;
         return {
