@@ -1,13 +1,13 @@
 import { MusicalNoteIcon } from "@heroicons/react/24/outline";
-import { TrackList } from "./TrackList";
+import { TopTracks } from "./TopTracks";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { SlideOver } from "./SlideOver";
 import { CreatePlaylistForm } from "./CreatePlaylistForm";
 
 export default async function Home() {
-  const session = await auth();
-  if (!session) {
+  const isSignedIn = await isAuthenticated();
+  if (!isSignedIn) {
     redirect("/api/auth/signin");
   }
 
@@ -25,7 +25,7 @@ export default async function Home() {
           </p>
         </div>
         <div className="mt-8">
-          <TrackList />
+          <TopTracks />
         </div>
       </div>
       <SlideOver>
@@ -34,6 +34,14 @@ export default async function Home() {
     </main>
   );
 }
+
+const isAuthenticated = async () => {
+  const session = await auth();
+  //@ts-ignore
+  const { expiresAt } = session?.user;
+  const isTokenActive = expiresAt * 1000 >= Math.floor(Date.now());
+  return !!session && isTokenActive;
+};
 
 // const getRecommendations = async () => {
 //   const tracks = await getTopTracks();

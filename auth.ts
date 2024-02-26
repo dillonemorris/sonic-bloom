@@ -18,6 +18,7 @@ export const {
     async jwt({ token, account, user }) {
       if (account) {
         token.id = user.id;
+        token.expiresAt = account.expires_at;
         token.accessToken = account.access_token;
       }
       return token;
