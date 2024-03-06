@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { PlusIcon } from "@heroicons/react/16/solid";
-import { useSlideoverVisibilty } from "./Providers";
+import { useSelectedTracks, useSlideoverVisibilty } from "./Providers";
 
 export const TopTracks = () => {
   const [pageIndex, setPageIndex] = useState(0);
@@ -47,7 +47,7 @@ const Pagination = ({
         <p className="text-sm text-gray-700">
           Showing <span className="font-medium">{pageIndex * 16 + 1}</span> to{" "}
           <span className="font-medium">{(pageIndex + 1) * 16}</span> of{" "}
-          <span className="font-medium">{total}</span> results
+          <span className="font-medium w-4">{total}</span> results
         </p>
       </div>
       <div className="flex flex-1 justify-between sm:justify-end">
@@ -75,18 +75,21 @@ const Pagination = ({
 
 const TrackList = ({ pageIndex }: { pageIndex: number }) => {
   const { tracks } = useSerializedTopTracks(pageIndex);
+  const { onTrackClick } = useSelectedTracks();
+  // TODO: Slideover should only open on menu button click
   const { open } = useSlideoverVisibilty();
 
-  // TODO: Pass to CreatePlaylistForm via context
-  const [selectedTracks, setSelectedTracks] = useState();
-
+  // TODO: Should show minus sign if track is already selected
   return (
     <ul role="list" className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
       {tracks.map((track) => (
         <li key={track.id}>
           <button
             type="button"
-            onClick={open}
+            onClick={() => {
+              open();
+              onTrackClick(track);
+            }}
             className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
             <span className="flex min-w-0 flex-1 items-center space-x-3">
@@ -185,12 +188,12 @@ const useSerializedTopTracks = (pageIndex: number): Tracks => {
 };
 
 const useTopTracks = (pageIndex: number) => {
-  const fetchWithToken = useFetchWithToken();
+  const fetcher = useFetchWithToken();
   const offset = pageIndex * TRACKS_PER_PAGE;
   const token = useAccessToken();
   const response = useSWR(
     [`me/top/tracks?offset=${offset}&limit=${TRACKS_PER_PAGE}`, token],
-    ([url, token]) => fetchWithToken(url, token)
+    ([url, token]) => fetcher(url, token)
   );
 
   return response;

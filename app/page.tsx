@@ -38,7 +38,7 @@ export default async function Home() {
 const isAuthenticated = async () => {
   const session = await auth();
   //@ts-ignore
-  const { expiresAt } = session?.user;
+  const expiresAt = session?.user?.expiresAt;
   const isTokenActive = expiresAt * 1000 >= Math.floor(Date.now());
   return !!session && isTokenActive;
 };

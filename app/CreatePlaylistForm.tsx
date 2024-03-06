@@ -1,55 +1,34 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  LinkIcon,
-  PlusIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/20/solid";
-import { useSlideoverVisibilty } from "./Providers";
+import Image from "next/image";
+import { PlusIcon } from "@heroicons/react/20/solid";
+import { useSelectedTracks, useSlideoverVisibilty } from "./Providers";
+import { useSession } from "next-auth/react";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+import useSWRImmutable from "swr/immutable";
 
-const team = [
-  {
-    name: "Tom Cook",
-    email: "tom.cook@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Whitney Francis",
-    email: "whitney.francis@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Leonard Krasner",
-    email: "leonard.krasner@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Floyd Miles",
-    email: "floyd.miles@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Emily Selman",
-    email: "emily.selman@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-];
+// TODO:
+// 1. Allow user to determine playlist size
+// 2. Pass unique name for playlist
+// 3. Show success message
 
 export const CreatePlaylistForm = () => {
   const { close } = useSlideoverVisibilty();
+  const { trigger, data: emptyPlaylist } = useCreatePlaylistMutation();
+  const playlist = useAddTracksQuery(emptyPlaylist?.id);
+
+  console.log(playlist);
+
   return (
-    <form className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        trigger({ name: "Hello from Sonic Bloom" });
+      }}
+      className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl"
+    >
       <div className="flex-1">
         {/* Header */}
         <div className="bg-gray-50 px-4 py-6 sm:px-6">
@@ -99,7 +78,7 @@ export const CreatePlaylistForm = () => {
           </div>
 
           {/* Tracks */}
-          <fieldset className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
+          <fieldset className="space-y-2 px-4 flex flex-col">
             <legend className="sr-only">Tracks</legend>
             <div
               className="text-sm font-medium leading-6 text-gray-900"
@@ -107,6 +86,7 @@ export const CreatePlaylistForm = () => {
             >
               Tracks
             </div>
+            <TrackList />
           </fieldset>
         </div>
       </div>
@@ -123,7 +103,7 @@ export const CreatePlaylistForm = () => {
           </button>
           <button
             type="submit"
-            className="inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="inline-flex justify-center rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
           >
             Create
           </button>
@@ -131,4 +111,128 @@ export const CreatePlaylistForm = () => {
       </div>
     </form>
   );
+};
+
+const TrackList = () => {
+  const { list } = useSelectedTracks();
+  return (
+    <ul role="list" className="mt-6 flex flex-col gap-2">
+      {list.map((track) => (
+        <li key={track.id}>
+          <button
+            type="button"
+            className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          >
+            <span className="flex min-w-0 flex-1 items-center space-x-3">
+              <span className="block flex-shrink-0">
+                <Image
+                  className="h-10 w-10 rounded-full"
+                  src={track.imageUrl}
+                  width={64}
+                  height={64}
+                  alt=""
+                />
+              </span>
+              <span className="block min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-gray-900">
+                  {track.name}
+                </span>
+                <span className="block truncate text-sm font-medium text-gray-500">
+                  {track.artist}
+                </span>
+              </span>
+            </span>
+            <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center">
+              <PlusIcon
+                className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                aria-hidden="true"
+              />
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+const useAddTracksQuery = (playlistId: string | null) => {
+  const fetcher = useFetchWithToken();
+  const token = useAccessToken();
+  const tracks = useRecommendations();
+  const trackUris = tracks?.map((track: any) => track.uri).join(",");
+  const { data } = useSWRImmutable(
+    playlistId
+      ? [`playlists/${playlistId}/tracks?uris=${trackUris}`, token]
+      : null,
+    ([url, token]) => fetcher(url, token, "POST")
+  );
+
+  return data;
+};
+
+const useCreatePlaylistMutation = () => {
+  const createPlaylist = useCreatePlaylist();
+  const userId = useUserId();
+  const token = useAccessToken();
+
+  return useSWRMutation(
+    [`users/${userId}/playlists`, token],
+    ([url, token], { arg }: { arg: { name: string } }) =>
+      createPlaylist(url, token, arg.name)
+  );
+};
+
+const useCreatePlaylist = () => {
+  return async (url: string, token: string, name: string) => {
+    const res = await fetch(`https://api.spotify.com/v1/${url}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    return await res.json();
+  };
+};
+
+const useUserId = () => {
+  const fetcher = useFetchWithToken();
+  const token = useAccessToken();
+  const { data: user } = useSWR(["me", token], ([url, token]) =>
+    fetcher(url, token)
+  );
+  return user?.id;
+};
+
+const useRecommendations = () => {
+  const fetcher = useFetchWithToken();
+  const token = useAccessToken();
+  const { list: seedTracks } = useSelectedTracks();
+  const seedTrackIds = seedTracks.map((track) => track.id);
+
+  const { data } = useSWR(
+    [`recommendations?seed_tracks=${seedTrackIds.join()}`, token],
+    ([url, token]) => fetcher(url, token)
+  );
+
+  return data?.tracks;
+};
+
+const useAccessToken = (): string => {
+  const { data: session } = useSession();
+  //@ts-ignore
+  return session?.user.accessToken;
+};
+
+const useFetchWithToken = () => {
+  return async (url: string, token: string, method = "GET") => {
+    const res = await fetch(`https://api.spotify.com/v1/${url}`, {
+      method,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return await res.json();
+  };
 };
