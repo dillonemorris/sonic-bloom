@@ -1,25 +1,25 @@
 "use client";
 
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
-import { PlusIcon } from "@heroicons/react/20/solid";
-import { useSelectedTracks, useSlideoverVisibilty } from "./Providers";
-import { useSession } from "next-auth/react";
 import useSWR from "swr";
+import Image from "next/image";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
+import { useSession } from "next-auth/react";
+import { useSelectedTracks } from "./Providers";
+import { MinusIcon } from "@heroicons/react/24/outline";
 
 // TODO:
 // 1. Allow user to determine playlist size
 // 2. Pass unique name for playlist
 // 3. Show success message
 
-export const CreatePlaylistForm = () => {
-  const { close } = useSlideoverVisibilty();
+export const CreatePlaylistForm = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const { trigger, data: emptyPlaylist } = useCreatePlaylistMutation();
   const playlist = useAddTracksQuery(emptyPlaylist?.id);
-
-  console.log(playlist);
 
   return (
     <form
@@ -41,17 +41,7 @@ export const CreatePlaylistForm = () => {
                 These are the seeds for your personalized playlist.
               </p>
             </div>
-            <div className="flex h-7 items-center">
-              <button
-                type="button"
-                className="relative text-gray-400 hover:text-gray-500"
-                onClick={close}
-              >
-                <span className="absolute -inset-2.5" />
-                <span className="sr-only">Close panel</span>
-                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
+            {children}
           </div>
         </div>
 
@@ -114,12 +104,13 @@ export const CreatePlaylistForm = () => {
 };
 
 const TrackList = () => {
-  const { list } = useSelectedTracks();
+  const { list, onTrackClick } = useSelectedTracks();
   return (
     <ul role="list" className="mt-6 flex flex-col gap-2">
       {list.map((track) => (
         <li key={track.id}>
           <button
+            onClick={() => onTrackClick(track)}
             type="button"
             className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
@@ -143,7 +134,7 @@ const TrackList = () => {
               </span>
             </span>
             <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center">
-              <PlusIcon
+              <MinusIcon
                 className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
                 aria-hidden="true"
               />

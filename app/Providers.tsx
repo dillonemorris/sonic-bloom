@@ -8,48 +8,10 @@ type ProviderProps = { children: React.ReactNode };
 export default function Providers({ children }: ProviderProps) {
   return (
     <SessionProvider>
-      <SlideOverVisibilityProvider>
-        <TracksProvider>{children}</TracksProvider>
-      </SlideOverVisibilityProvider>
+      <TracksProvider>{children}</TracksProvider>
     </SessionProvider>
   );
 }
-
-// TODO: Delete if not used after changing UX
-type SlideOverVisibilityContextType = {
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
-} | null;
-
-const SlideOverVisibilityContext =
-  createContext<SlideOverVisibilityContextType>(null);
-
-const SlideOverVisibilityProvider = ({ children }: ProviderProps) => {
-  const [isSlideoverOpen, setIsSlideoverOpen] = useState(false);
-  return (
-    <SlideOverVisibilityContext.Provider
-      value={{
-        isOpen: isSlideoverOpen,
-        open: () => setIsSlideoverOpen(true),
-        close: () => setIsSlideoverOpen(false),
-      }}
-    >
-      {children}
-    </SlideOverVisibilityContext.Provider>
-  );
-};
-
-export const useSlideoverVisibilty = () => {
-  const context = useContext(SlideOverVisibilityContext);
-  if (!context) {
-    throw new Error(
-      "useSlideoverVisibilty has to be used within <SlideOverVisibilityContext.Provider>"
-    );
-  }
-
-  return context;
-};
 
 type Track = {
   id: string;
@@ -60,6 +22,7 @@ type Track = {
 
 type TracksContextType = {
   list: Track[];
+  isSelected: (track: Track) => boolean;
   onTrackClick: (track: Track) => void;
 } | null;
 
@@ -67,10 +30,13 @@ const TracksContext = createContext<TracksContextType>(null);
 
 const TracksProvider = ({ children }: ProviderProps) => {
   const [selectedTracks, setSelectedTracks] = useState<Track[]>([]);
+  const isSelected = (track: Track): boolean => {
+    return selectedTracks.some(({ id }) => id === track.id);
+  };
 
   const handleTrackClick = (track: Track) => {
     setSelectedTracks((tracks: Track[]) => {
-      if (tracks.find(({ id }) => id === track.id)) {
+      if (isSelected(track)) {
         return tracks.filter(({ id }) => id !== track.id);
       }
 
@@ -81,6 +47,7 @@ const TracksProvider = ({ children }: ProviderProps) => {
   return (
     <TracksContext.Provider
       value={{
+        isSelected,
         list: selectedTracks,
         onTrackClick: handleTrackClick,
       }}

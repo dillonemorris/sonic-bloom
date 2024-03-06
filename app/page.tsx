@@ -1,9 +1,8 @@
-import { MusicalNoteIcon } from "@heroicons/react/24/outline";
-import { TopTracks } from "./TopTracks";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { TopTracks } from "./TopTracks";
 import { SlideOver } from "./SlideOver";
-import { CreatePlaylistForm } from "./CreatePlaylistForm";
+import { redirect } from "next/navigation";
+import { MusicalNoteIcon } from "@heroicons/react/24/outline";
 
 export default async function Home() {
   const isSignedIn = await isAuthenticated();
@@ -28,9 +27,7 @@ export default async function Home() {
           <TopTracks />
         </div>
       </div>
-      <SlideOver>
-        <CreatePlaylistForm />
-      </SlideOver>
+      <SlideOver />
     </main>
   );
 }
@@ -42,14 +39,3 @@ const isAuthenticated = async () => {
   const isTokenActive = expiresAt * 1000 >= Math.floor(Date.now());
   return !!session && isTokenActive;
 };
-
-// const getRecommendations = async () => {
-//   const tracks = await getTopTracks();
-
-//   // TODO: pass a comma separated list of selected tracks
-//   const data = await fetchWithToken(
-//     `recommendations?seed_artists=${tracks[0].artists[0].id}`
-//   );
-
-//   return data ? data.tracks : [];
-// };
