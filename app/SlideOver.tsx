@@ -5,15 +5,20 @@ import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { CreatePlaylistForm } from "./CreatePlaylistForm";
+import { useSelectedTracks } from "./Providers";
 
 export const SlideOver = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { list } = useSelectedTracks();
+  const isSelecting = !!list.length;
 
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="absolute top-6 right-6 inline-flex items-center gap-x-1.5 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+        className={`absolute top-6 right-6 inline-flex items-center gap-x-1.5 rounded-full  px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${
+          isSelecting ? "ring-teal-500 ring-2 bg-gray-50" : null
+        }`}
       >
         <PlusIcon
           className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
