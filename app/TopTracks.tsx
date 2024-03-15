@@ -2,7 +2,8 @@
 
 import useSWR from "swr";
 import Image from "next/image";
-import { useState } from "react";
+import useSound from "use-sound";
+import { useEffect, useState } from "react";
 import { useSelectedTracks } from "./Providers";
 import { useSession } from "next-auth/react";
 import { PlusIcon } from "@heroicons/react/16/solid";
@@ -37,7 +38,7 @@ const Pagination = ({
   onNextClick,
   onPrevClick,
 }: PaginationProps) => {
-  const { total } = useSerializedTopTracks(pageIndex);
+  const { totalNum } = useSerializedTopTracks(pageIndex);
 
   return (
     <nav
@@ -48,7 +49,7 @@ const Pagination = ({
         <p className="text-sm text-gray-700">
           Showing <span className="font-medium">{pageIndex * 16 + 1}</span> to{" "}
           <span className="font-medium">{(pageIndex + 1) * 16}</span> of{" "}
-          <span className="font-medium w-4">{total}</span> results
+          <span className="font-medium w-4">{totalNum}</span> results
         </p>
       </div>
       <div className="flex flex-1 justify-between sm:justify-end">
@@ -75,52 +76,119 @@ const Pagination = ({
 };
 
 const TrackList = ({ pageIndex }: { pageIndex: number }) => {
-  const { tracks } = useSerializedTopTracks(pageIndex);
-  const { onTrackClick, isSelected } = useSelectedTracks();
+  const { list } = useSerializedTopTracks(pageIndex);
+  const [currentTrack, setCurrentTrack] = useState<HTMLAudioElement | null>(
+    null
+  );
+  const [isPaused, setIsPaused] = useState(true);
+
+  // const handlePlay = (url: string) => {
+  //   if (currentAudio?.getAttribute("src") === url) {
+  //     if (isPaused) {
+  //       currentAudio.play();
+  //       setIsPaused(false);
+  //     } else {
+  //       currentAudio.pause();
+  //       setIsPaused(true);
+  //     }
+  //   } else {
+  //     const newAudio = new Audio(url);
+  //     setCurrentAudio(newAudio);
+  //     newAudio.play();
+  //   }
+  // };
+
+  const handlePlayback = (url: string) => {
+    const isNextTrack = currentTrack?.getAttribute("src") !== url;
+    const newAudio = new Audio(url);
+
+    if (currentTrack) {
+      if (isPaused) {
+        currentTrack.play();
+        setIsPaused(false);
+      } else {
+        currentTrack.pause();
+        setIsPaused(true);
+      }
+    }
+
+    if (isNextTrack) {
+      setCurrentTrack(newAudio);
+      newAudio?.play();
+      setIsPaused(false);
+    }
+
+    // if (isPaused) {
+    //   currentAudio.play();
+    // } else {
+    //   currentAudio.pause();
+    // }
+  };
+
+  // TODO:
+  // There should only be 1 player even though each item has a control
+  // The control must start a new audio track with whatever
+  // track has been licked on
 
   return (
     <ul role="list" className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-      {tracks.map((track) => {
-        const Icon = isSelected(track) ? MinusIcon : PlusIcon;
+      {list.map((track) => {
         return (
-          <li key={track.id}>
-            <button
-              type="button"
-              onClick={() => onTrackClick(track)}
-              className={`group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-offset-2 ${
-                isSelected(track) && "border-teal-500 bg-gray-50"
-              }`}
-            >
-              <span className="flex min-w-0 flex-1 items-center space-x-3">
-                <span className="block flex-shrink-0">
-                  <Image
-                    className="h-10 w-10 rounded-full"
-                    src={track.imageUrl}
-                    width={64}
-                    height={64}
-                    alt=""
-                  />
-                </span>
-                <span className="block min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-gray-900">
-                    {track.name}
-                  </span>
-                  <span className="block truncate text-sm font-medium text-gray-500">
-                    {track.artist}
-                  </span>
-                </span>
-              </span>
-              <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center">
-                <Icon
-                  className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                  aria-hidden="true"
-                />
-              </span>
-            </button>
-          </li>
+          <TrackItem key={track.id} track={track} onPlayback={handlePlayback} />
         );
       })}
     </ul>
+  );
+};
+
+type TrackItemProps = {
+  track: Track;
+  onPlayback: (previewUrl: string) => void;
+};
+
+const TrackItem = ({ track, onPlayback }: TrackItemProps) => {
+  const { isSelected, onTrackClick } = useSelectedTracks();
+  const Icon = isSelected(track) ? MinusIcon : PlusIcon;
+
+  return (
+    <li key={track.id}>
+      <button
+        type="button"
+        onClick={() => {
+          onTrackClick(track);
+        }}
+        className={`group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-offset-2 ${
+          isSelected(track) && "border-teal-500 bg-gray-50"
+        }`}
+      >
+        <span className="flex min-w-0 flex-1 items-center space-x-3">
+          <span className="block flex-shrink-0">
+            <Image
+              className="h-10 w-10 rounded-full"
+              src={track.imageUrl}
+              width={64}
+              height={64}
+              alt=""
+            />
+          </span>
+          <span className="block min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium text-gray-900">
+              {track.name}
+            </span>
+            <span className="block truncate text-sm font-medium text-gray-500">
+              {track.artist}
+            </span>
+          </span>
+        </span>
+        <button onClick={() => onPlayback(track.previewUrl)}>Play</button>
+        <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center">
+          <Icon
+            className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
+            aria-hidden="true"
+          />
+        </span>
+      </button>
+    </li>
   );
 };
 
@@ -160,27 +228,31 @@ type Track = {
   name: string;
   artist: string;
   imageUrl: string;
+  previewUrl: string;
 };
 
 type Tracks = {
-  tracks: Track[];
-  total: number;
+  list: Track[];
+  totalNum: number;
   isLoading: boolean;
 };
 
 const useSerializedTopTracks = (pageIndex: number): Tracks => {
   const { data, isLoading } = useTopTracks(pageIndex);
+
   return {
     isLoading,
-    total: data?.total,
-    tracks: data?.items
+    totalNum: data?.total,
+    list: data?.items
       ? data.items.map((track: any) => {
-          const { images } = track.album;
+          const albumImages = track.album.images;
+          const image = albumImages[albumImages.length - 1];
           return {
             id: track.id,
             name: track.name,
             artist: track.artists[0].name,
-            imageUrl: images[images.length - 1].url,
+            previewUrl: track.preview_url,
+            imageUrl: image.url,
           };
         })
       : [],

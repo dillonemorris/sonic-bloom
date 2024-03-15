@@ -8,7 +8,7 @@ type ProviderProps = { children: React.ReactNode };
 export default function Providers({ children }: ProviderProps) {
   return (
     <SessionProvider>
-      <TracksProvider>{children}</TracksProvider>
+      <SelectedTracksProvider>{children}</SelectedTracksProvider>
     </SessionProvider>
   );
 }
@@ -28,7 +28,7 @@ type TracksContextType = {
 
 const TracksContext = createContext<TracksContextType>(null);
 
-const TracksProvider = ({ children }: ProviderProps) => {
+const SelectedTracksProvider = ({ children }: ProviderProps) => {
   const [selectedTracks, setSelectedTracks] = useState<Track[]>([]);
   const isSelected = (track: Track): boolean => {
     return selectedTracks.some(({ id }) => id === track.id);
