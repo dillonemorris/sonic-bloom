@@ -6,7 +6,9 @@ import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
 import { useSession } from "next-auth/react";
 import { useSelectedTracks } from "./Providers";
-import { MinusIcon } from "@heroicons/react/24/outline";
+import { MinusIcon, XCircleIcon } from "@heroicons/react/24/outline";
+
+const MAX_SEEDS = 5;
 
 // TODO:
 // 1. Allow user to determine playlist size
@@ -18,14 +20,18 @@ export const CreatePlaylistForm = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { list } = useSelectedTracks();
   const { trigger, data: emptyPlaylist } = useCreatePlaylistMutation();
   const playlist = useAddTracksQuery(emptyPlaylist?.id);
+  const doesListExceedMax = list.length > MAX_SEEDS;
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        trigger({ name: "Hello from Sonic Bloom" });
+        // @ts-ignore
+        const name = e.target.playlistName.value;
+        trigger({ name });
       }}
       className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl"
     >
@@ -44,14 +50,14 @@ export const CreatePlaylistForm = ({
             {children}
           </div>
         </div>
-
         {/* Divider container */}
         <div className="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
           {/* Playlist name */}
           <div className="space-y-2 px-4 flex flex-col sm:space-y-0 sm:px-6 sm:py-5">
+            {doesListExceedMax ? <Error /> : null}
             <div>
               <label
-                htmlFor="playlist-name"
+                htmlFor="name"
                 className="block text-sm font-medium leading-6 text-gray-900 sm:mt-1.5 mb-2"
               >
                 Playlist name
@@ -60,13 +66,12 @@ export const CreatePlaylistForm = ({
             <div className="sm:col-span-2">
               <input
                 type="text"
-                name="playlist-name"
-                id="playlist-name"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                name="playlistName"
+                id="name"
+                className="block w-full rounded-md border-0 pl-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
-
           {/* Tracks */}
           <fieldset className="space-y-2 px-4 flex flex-col">
             <legend className="sr-only">Tracks</legend>
@@ -100,6 +105,23 @@ export const CreatePlaylistForm = ({
         </div>
       </div>
     </form>
+  );
+};
+
+const Error = () => {
+  return (
+    <div className="rounded-md bg-red-50 px-4 py-2 mb-2">
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+        </div>
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-red-800">
+            You have too many seeds, the limit is 5
+          </h3>
+        </div>
+      </div>
+    </div>
   );
 };
 
