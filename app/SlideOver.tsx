@@ -7,24 +7,19 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { CreatePlaylistForm } from "./CreatePlaylistForm";
 import { useSelectedTracks } from "./Providers";
 
-const MAX_SEEDS = 5;
-
 export const SlideOver = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { list } = useSelectedTracks();
-  // TODO: Add to context
-  const isSelecting = !!list.length;
-  const doesListExceedMax = list.length > MAX_SEEDS;
-  const activeRingClasses = `ring-teal-500 ring-2 bg-gray-50 ${
-    doesListExceedMax && "ring-pink-400"
-  }`;
+  const hasSelectedTracks = list.length > 0;
+  const activeRingClasses = "ring-teal-500 ring-2 bg-gray-50";
 
   return (
     <>
       <button
+        disabled={!hasSelectedTracks}
         onClick={() => setIsOpen(true)}
         className={`absolute top-6 right-6 inline-flex items-center gap-x-1.5 rounded-full  px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${
-          isSelecting ? activeRingClasses : null
+          hasSelectedTracks ? activeRingClasses : null
         }`}
       >
         <PlusIcon
