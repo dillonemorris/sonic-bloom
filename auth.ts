@@ -21,7 +21,7 @@ export const {
       )}`,
     }),
   ],
-  secret: process.env.SPOTIFY_CLIENT_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, account, user }) {
       if (account) {
