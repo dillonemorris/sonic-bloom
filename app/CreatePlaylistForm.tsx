@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { useState } from "react";
 import Image from "next/image";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
@@ -10,30 +11,16 @@ import {
   ArrowPathIcon,
   CheckCircleIcon,
   MinusIcon,
-  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useState } from "react";
 
-const MAX_SEEDS = 5;
-
-export const CreatePlaylistForm = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const [trackCount, setTrackCount] = useState("50");
+export const CreatePlaylistForm = () => {
+  const [trackCount, setTrackCount] = useState("25");
   const { trigger, data: emptyPlaylist } = useCreatePlaylistMutation();
   const { isLoading, data: playlist } = useAddTracksQuery(
     emptyPlaylist?.id,
     trackCount
   );
-  const { list } = useSelectedTracks();
-  const doesListExceedMax = list.length > MAX_SEEDS;
-
-  const tracks = useRecommendations(trackCount);
-
-  console.log(tracks, trackCount);
 
   return (
     <form
@@ -43,11 +30,11 @@ export const CreatePlaylistForm = ({
         const name = e.target.playlistName.value || "Hello from Sonic Bloom";
         trigger({ name });
       }}
-      className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl"
+      className="flex h-full flex-col"
     >
       <div className="flex-1">
         {/* Header */}
-        <div className="bg-gray-50 px-4 py-6 sm:px-6">
+        <div className="p-4 text-center">
           <div className="flex items-start justify-between space-x-3">
             <div className="space-y-1">
               <h2 className="text-base font-semibold leading-6 text-gray-900">
@@ -57,13 +44,12 @@ export const CreatePlaylistForm = ({
                 These are the seeds for your personalized playlist.
               </p>
             </div>
-            {children}
           </div>
         </div>
         {/* Divider container */}
-        <div className="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+        <div className="py-6 sm:divide-y sm:divide-gray-200">
           {/* Playlist name */}
-          <div className="space-y-2 px-4 flex flex-col sm:space-y-0 sm:px-6 sm:py-5">
+          <div className="flex flex-col py-5">
             <div>
               <label
                 htmlFor="name"
@@ -82,7 +68,7 @@ export const CreatePlaylistForm = ({
             </div>
           </div>
 
-          <div className="space-y-2 px-4 flex flex-col sm:space-y-0 sm:px-6 sm:py-5">
+          <div className="flex flex-col py-5">
             <label
               htmlFor="trackCount"
               className="block text-sm font-medium leading-6 text-gray-900 sm:mt-1.5 mb-2"
@@ -92,7 +78,7 @@ export const CreatePlaylistForm = ({
             <select
               id="trackCount"
               name="trackCount"
-              className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-grey-600 sm:text-sm sm:leading-6"
               value={trackCount}
               onChange={(e) => setTrackCount(e.target.value)}
             >
@@ -106,7 +92,7 @@ export const CreatePlaylistForm = ({
           </div>
 
           {/* Tracks */}
-          <fieldset className="space-y-2 px-4 flex flex-col">
+          <fieldset className="space-y-2 flex flex-col">
             <legend className="sr-only">Tracks</legend>
             <div
               className="text-sm font-medium leading-6 text-gray-900"
@@ -119,7 +105,7 @@ export const CreatePlaylistForm = ({
         </div>
       </div>
 
-      <div className="flex-shrink-0 border-t border-gray-200 px-4 py-5 sm:px-6">
+      <div className="flex-shrink-0 border-t border-gray-200 py-5 mt-4">
         <div className="flex justify-end space-x-3">
           {(() => {
             if (playlist?.snapshot_id) {
@@ -128,14 +114,10 @@ export const CreatePlaylistForm = ({
               );
             }
 
-            if (doesListExceedMax) {
-              return <Error />;
-            }
-
             return (
               <button
                 type="submit"
-                className="inline-flex justify-center rounded-md bg-teal-600 p-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 w-full"
+                className="inline-flex justify-center rounded-md bg-neutral-950 p-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 w-full"
               >
                 {isLoading ? (
                   <ArrowPathIcon className="w-5 h-5 animate-spin mr-2" />
@@ -152,7 +134,7 @@ export const CreatePlaylistForm = ({
 
 const Success = ({ playlistUrl }: { playlistUrl: string }) => {
   return (
-    <div className="rounded-md bg-green-50 p-4">
+    <div className="rounded-md bg-green-50 p-4 w-full">
       <div className="flex">
         <div className="flex-shrink-0">
           <CheckCircleIcon
@@ -165,9 +147,7 @@ const Success = ({ playlistUrl }: { playlistUrl: string }) => {
             Successfully created
           </h3>
           <div className="mt-2 text-sm text-green-700">
-            <p>
-              Your playlist has been created and is now available in Spotify!
-            </p>
+            <p>Your playlist is now available on Spotify!</p>
           </div>
           <div className="mt-4">
             <div className="-mx-2 -my-1.5 flex">
@@ -179,23 +159,6 @@ const Success = ({ playlistUrl }: { playlistUrl: string }) => {
               </Link>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Error = () => {
-  return (
-    <div className="rounded-md bg-red-50 p-4 w-full">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-red-800">
-            You have too many seeds, the limit is 5
-          </h3>
         </div>
       </div>
     </div>
@@ -260,7 +223,7 @@ const useAddTracksQuery = (playlistId: string | null, trackCount: string) => {
 };
 
 // Creates an empty playlist in which tracks can then be added
-// Spotify API does not accept tracks as a parameter to playlist creation
+// Spotify API does not accept tracks as a parameter during playlist creation
 const useCreatePlaylistMutation = () => {
   const createPlaylist = useCreatePlaylist();
   const userId = useUserId();

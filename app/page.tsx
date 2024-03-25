@@ -1,8 +1,7 @@
 import { auth } from "@/auth";
-import { TopTracks } from "./TopTracks";
-import { SlideOver } from "./SlideOver";
 import { redirect } from "next/navigation";
 import { MusicalNoteIcon } from "@heroicons/react/24/outline";
+import { TopTracks } from "./TopTracks";
 
 export default async function Home() {
   const isSignedIn = await isAuthenticated();
@@ -11,7 +10,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between sm:p-24 py-24 px-4">
+    <main className="flex min-h-screen flex-col items-center justify-between sm:p-24 py-16 px-4">
       <div className="mx-auto max-w-md sm:max-w-2xl">
         <div className="text-center">
           <MusicalNoteIcon className="mx-auto h-8 w-8 text-gray-400" />
@@ -27,7 +26,6 @@ export default async function Home() {
           <TopTracks />
         </div>
       </div>
-      <SlideOver />
     </main>
   );
 }
