@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { MusicalNoteIcon } from "@heroicons/react/24/outline";
-import { TopTracks } from "./TopTracks";
+import { TrackSelection } from "./TrackSelection";
 
 export default async function Home() {
   const isSignedIn = await isAuthenticated();
@@ -23,7 +23,7 @@ export default async function Home() {
           </p>
         </div>
         <div className="mt-8">
-          <TopTracks />
+          <TrackSelection />
         </div>
       </div>
     </main>

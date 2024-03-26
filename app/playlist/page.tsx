@@ -1,4 +1,4 @@
-import { CreatePlaylistForm } from "../CreatePlaylistForm";
+import { CreatePlaylistForm } from "./CreatePlaylistForm.tsx";
 
 export default function Playlist() {
   return (

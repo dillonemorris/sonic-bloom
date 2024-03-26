@@ -2,23 +2,20 @@
 
 import useSWR from "swr";
 import { useState } from "react";
-import Image from "next/image";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
 import { useSession } from "next-auth/react";
-import { useSelectedTracks } from "./Providers";
-import {
-  ArrowPathIcon,
-  CheckCircleIcon,
-  MinusIcon,
-} from "@heroicons/react/24/outline";
-import Link from "next/link";
+import { SubmitButton } from "./SubmitButton";
+import { SuccessMessage } from "./SuccessMessage";
+import { useSelectedTracks } from "../../Providers";
+import { TrackCountSelect } from "./TrackCountSelect";
+import { SelectedTracksList } from "./SelectedTracksList";
 
 export const CreatePlaylistForm = () => {
   const [trackCount, setTrackCount] = useState("25");
-  const { trigger, data: emptyPlaylist } = useCreatePlaylistMutation();
-  const { isLoading, data: playlist } = useAddTracksQuery(
-    emptyPlaylist?.id,
+  const { trigger, data: playlist } = useCreatePlaylistMutation();
+  const { isLoading, data: playlistWithTracks } = useAddTracksQuery(
+    playlist?.id,
     trackCount
   );
 
@@ -69,26 +66,10 @@ export const CreatePlaylistForm = () => {
           </div>
 
           <div className="flex flex-col py-5">
-            <label
-              htmlFor="trackCount"
-              className="block text-sm font-medium leading-6 text-gray-900 sm:mt-1.5 mb-2"
-            >
-              Number of tracks
-            </label>
-            <select
-              id="trackCount"
-              name="trackCount"
-              className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-grey-600 sm:text-sm sm:leading-6"
-              value={trackCount}
-              onChange={(e) => setTrackCount(e.target.value)}
-            >
-              <option>20</option>
-              <option>25</option>
-              <option>30</option>
-              <option>40</option>
-              <option>50</option>
-              <option>100</option>
-            </select>
+            <TrackCountSelect
+              trackCount={trackCount}
+              setTrackCount={setTrackCount}
+            />
           </div>
 
           {/* Tracks */}
@@ -100,111 +81,21 @@ export const CreatePlaylistForm = () => {
             >
               Tracks
             </div>
-            <TrackList />
+            <SelectedTracksList />
           </fieldset>
         </div>
       </div>
 
       <div className="flex-shrink-0 border-t border-gray-200 py-5 mt-4">
         <div className="flex justify-end space-x-3">
-          {(() => {
-            if (playlist?.snapshot_id) {
-              return (
-                <Success playlistUrl={emptyPlaylist.external_urls.spotify} />
-              );
-            }
-
-            return (
-              <button
-                type="submit"
-                className="inline-flex justify-center rounded-md bg-neutral-950 p-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 w-full"
-              >
-                {isLoading ? (
-                  <ArrowPathIcon className="w-5 h-5 animate-spin mr-2" />
-                ) : null}
-                {isLoading ? "Loading..." : "Create"}
-              </button>
-            );
-          })()}
+          {!!playlistWithTracks?.snapshot_id ? (
+            <SuccessMessage playlistUrl={playlist.external_urls.spotify} />
+          ) : (
+            <SubmitButton isLoading={isLoading} />
+          )}
         </div>
       </div>
     </form>
-  );
-};
-
-const Success = ({ playlistUrl }: { playlistUrl: string }) => {
-  return (
-    <div className="rounded-md bg-green-50 p-4 w-full">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <CheckCircleIcon
-            className="h-5 w-5 text-green-400"
-            aria-hidden="true"
-          />
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-green-800">
-            Successfully created
-          </h3>
-          <div className="mt-2 text-sm text-green-700">
-            <p>Your playlist is now available on Spotify!</p>
-          </div>
-          <div className="mt-4">
-            <div className="-mx-2 -my-1.5 flex">
-              <Link
-                href={playlistUrl}
-                className="rounded-md bg-green-50 px-2 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
-              >
-                View playlist
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const TrackList = () => {
-  const { list, onTrackClick } = useSelectedTracks();
-  return (
-    <ul role="list" className="mt-6 flex flex-col gap-2">
-      {list.map((track) => (
-        <li key={track.id}>
-          <button
-            onClick={() => onTrackClick(track)}
-            type="button"
-            className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-          >
-            <span className="flex min-w-0 flex-1 items-center space-x-3">
-              <span className="block flex-shrink-0">
-                <Image
-                  className="h-10 w-10 rounded-full"
-                  src={track.imageUrl}
-                  width={64}
-                  height={64}
-                  alt=""
-                />
-              </span>
-              <span className="block min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-gray-900">
-                  {track.name}
-                </span>
-                <span className="block truncate text-sm font-medium text-gray-500">
-                  {track.artist}
-                </span>
-              </span>
-            </span>
-            <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center">
-              <MinusIcon
-                className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                aria-hidden="true"
-              />
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
   );
 };
 
