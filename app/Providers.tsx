@@ -8,60 +8,61 @@ type ProviderProps = { children: React.ReactNode };
 export default function Providers({ children }: ProviderProps) {
   return (
     <SessionProvider>
-      <TracksProvider>{children}</TracksProvider>
+      <SelectItemsProvider>{children}</SelectItemsProvider>
     </SessionProvider>
   );
 }
 
-type Track = {
+export type Item = {
   id: string;
   name: string;
-  artist: string;
+  artist?: string;
   imageUrl: string;
+  type: "song" | "artist";
 };
 
-type TracksContextType = {
-  list: Track[];
-  isSelected: (track: Track) => boolean;
-  onTrackClick: (track: Track) => void;
+type SelectItemsContextType = {
+  list: Item[];
+  isSelected: (item: Item) => boolean;
+  onItemClick: (item: Item) => void;
 } | null;
 
-const TracksContext = createContext<TracksContextType>(null);
+const SelectItemsContext = createContext<SelectItemsContextType>(null);
 
-const TracksProvider = ({ children }: ProviderProps) => {
-  const [selectedTracks, setSelectedTracks] = useState<Track[]>([]);
-  const isSelected = (track: Track): boolean => {
-    return selectedTracks.some(({ id }) => id === track.id);
+const SelectItemsProvider = ({ children }: ProviderProps) => {
+  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const isSelected = (item: Item): boolean => {
+    return selectedItems.some(({ id }) => id === item.id);
   };
 
-  const handleTrackClick = (track: Track) => {
-    setSelectedTracks((tracks: Track[]) => {
-      if (isSelected(track)) {
-        return tracks.filter(({ id }) => id !== track.id);
+  const handleItemClick = (item: Item) => {
+    setSelectedItems((items: Item[]) => {
+      if (isSelected(item)) {
+        return items.filter(({ id }) => id !== item.id);
       }
 
-      return [...tracks, track];
+      return [...items, item];
     });
   };
 
   return (
-    <TracksContext.Provider
+    <SelectItemsContext.Provider
       value={{
         isSelected,
-        list: selectedTracks,
-        onTrackClick: handleTrackClick,
+        list: selectedItems,
+        onItemClick: handleItemClick,
       }}
     >
       {children}
-    </TracksContext.Provider>
+    </SelectItemsContext.Provider>
   );
 };
 
-export const useSelectedTracks = () => {
-  const context = useContext(TracksContext);
+export const useSelectedItems = () => {
+  const context = useContext(SelectItemsContext);
   if (!context) {
     throw new Error(
-      "useSelectedTracks has to be used within <TracksContext.Provider>"
+      "useSelectedItems has to be used within <SelectedItemsContext.Provider>"
     );
   }
 

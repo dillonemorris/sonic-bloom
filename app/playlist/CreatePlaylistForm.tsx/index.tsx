@@ -7,9 +7,14 @@ import useSWRImmutable from "swr/immutable";
 import { useSession } from "next-auth/react";
 import { SubmitButton } from "./SubmitButton";
 import { SuccessMessage } from "./SuccessMessage";
-import { useSelectedTracks } from "../../Providers";
+import { useSelectedItems } from "../../Providers";
 import { TrackCountSelect } from "./TrackCountSelect";
 import { SelectedTracksList } from "./SelectedTracksList";
+
+/**
+ * TODO:
+ * Allow for adding tracks and/or artists to recommendations
+ */
 
 export const CreatePlaylistForm = () => {
   const [trackCount, setTrackCount] = useState("25");
@@ -154,7 +159,7 @@ const useUserId = () => {
 const useRecommendations = (count: string) => {
   const fetcher = useFetchWithToken();
   const token = useAccessToken();
-  const { list: seedTracks } = useSelectedTracks();
+  const { list: seedTracks } = useSelectedItems();
   const seedTrackIds = seedTracks.map((track) => track.id);
 
   const { data } = useSWR(

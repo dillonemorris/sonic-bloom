@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { useSelectedTracks } from "@/app/Providers";
+import { useSelectedItems } from "@/app/Providers";
 import { MinusIcon } from "@heroicons/react/24/outline";
 
 export const SelectedTracksList = () => {
-  const { list, onTrackClick } = useSelectedTracks();
+  const { list, onItemClick: onTrackClick } = useSelectedItems();
   return (
     <ul role="list" className="mt-6 flex flex-col gap-2">
       {list.map((track) => (

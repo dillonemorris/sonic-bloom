@@ -1,10 +1,10 @@
-import { TRACKS_PER_PAGE } from "./constants";
+import { ITEMS_PER_PAGE } from "./constants";
 import { PlusIcon } from "@heroicons/react/16/solid";
 
-export const TrackListSkeleton = () => {
+export const ItemsSkeleton = () => {
   return (
     <ul role="list" className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-      {Array.from(Array(TRACKS_PER_PAGE)).map((_, i) => {
+      {Array.from(Array(ITEMS_PER_PAGE)).map((_, i) => {
         return (
           <li key={i}>
             <div className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">

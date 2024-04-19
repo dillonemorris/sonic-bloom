@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useSelectedTracks } from "../Providers";
+import { useSelectedItems } from "../Providers";
 
 const MAX_SEEDS = 5;
 
@@ -14,7 +14,7 @@ export const PaginationWithCreateLink = ({
   onNextClick,
   onPrevClick,
 }: Props) => {
-  const { list } = useSelectedTracks();
+  const { list } = useSelectedItems();
   const hasSelectedTracks = list.length > 0;
 
   return (
