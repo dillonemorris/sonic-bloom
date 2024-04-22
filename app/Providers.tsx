@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { createContext, useState, useContext } from "react";
 
 type ProviderProps = { children: React.ReactNode };
@@ -67,4 +67,10 @@ export const useSelectedItems = () => {
   }
 
   return context;
+};
+
+export const useAccessToken = (): string => {
+  const { data: session } = useSession();
+  //@ts-ignore
+  return session?.user.accessToken;
 };

@@ -7,7 +7,7 @@ import useSWRImmutable from "swr/immutable";
 import { useSession } from "next-auth/react";
 import { SubmitButton } from "./SubmitButton";
 import { SuccessMessage } from "./SuccessMessage";
-import { useSelectedItems } from "../../Providers";
+import { useAccessToken, useSelectedItems } from "../../Providers";
 import { TrackCountSelect } from "./TrackCountSelect";
 import { SelectedItemsList } from "./SelectedItemsList";
 
@@ -171,12 +171,6 @@ const useRecommendations = (count: string) => {
   );
 
   return data?.tracks;
-};
-
-const useAccessToken = (): string => {
-  const { data: session } = useSession();
-  //@ts-ignore
-  return session?.user.accessToken;
 };
 
 const useFetchWithToken = () => {

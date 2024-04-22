@@ -3,30 +3,30 @@
 import { useState } from "react";
 import { PaginationWithCreateLink } from "./PaginationWithCreateLink";
 import { ItemsList } from "./ItemsList";
-import { Item } from "../Providers";
+import { Item, useAccessToken } from "../Providers";
 import { ItemsSkeleton } from "./ItemsSkeleton";
 import useSWR from "swr";
 import { ITEMS_PER_PAGE } from "./constants";
-import { useSession } from "next-auth/react";
+import { ActiveTypeTabs } from "./ActiveTypeTabs";
 
-type ActiveTypeState = "artists" | "tracks";
+export type ActiveTypeState = "artists" | "tracks";
 
-/**
- * TODO:
- * Tabs for active type switching
- */
-
-export const ItemSelection = () => {
+export const ItemsSelection = () => {
   const [pageIndex, setPageIndex] = useState(0);
-  const [activeType, setActiveType] = useState<ActiveTypeState>("artists");
+  const [activeType, setActiveType] = useState<ActiveTypeState>("tracks");
   const { items, isLoading } = useItems(pageIndex, activeType);
 
   if (isLoading || !items.length) {
-    return <ItemsSkeleton />;
+    return (
+      <div className="mt-24">
+        <ItemsSkeleton />
+      </div>
+    );
   }
 
   return (
     <>
+      <ActiveTypeTabs activeType={activeType} onTabClick={setActiveType} />
       <ItemsList items={items} />
       <div className="mt-6">
         <PaginationWithCreateLink
@@ -42,6 +42,22 @@ export const ItemSelection = () => {
 type Items = {
   items: Item[];
   isLoading: boolean;
+};
+
+const useItems = (pageIndex: number, activeType: ActiveTypeState): Items => {
+  const { data, isLoading } = useItemsResponse(pageIndex, activeType);
+  return {
+    isLoading,
+    items: data?.items
+      ? data.items.map((item: any) => {
+          if (activeType === "artists") {
+            return serializeArtist(item);
+          }
+
+          return serializeTrack(item);
+        })
+      : [],
+  };
 };
 
 const serializeArtist = (artist: any): Item => {
@@ -65,22 +81,6 @@ const serializeTrack = (track: any): Item => {
   };
 };
 
-const useItems = (pageIndex: number, activeType: ActiveTypeState): Items => {
-  const { data, isLoading } = useItemsResponse(pageIndex, activeType);
-  return {
-    isLoading,
-    items: data?.items
-      ? data.items.map((item: any) => {
-          if (activeType === "artists") {
-            return serializeArtist(item);
-          }
-
-          return serializeTrack(item);
-        })
-      : [],
-  };
-};
-
 const useItemsResponse = (pageIndex: number, activeType: ActiveTypeState) => {
   const fetcher = useFetchWithToken();
   const offset = pageIndex * ITEMS_PER_PAGE;
@@ -91,12 +91,6 @@ const useItemsResponse = (pageIndex: number, activeType: ActiveTypeState) => {
   );
 
   return response;
-};
-
-const useAccessToken = (): string => {
-  const { data: session } = useSession();
-  //@ts-ignore
-  return session?.user.accessToken;
 };
 
 const useFetchWithToken = () => {
