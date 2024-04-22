@@ -2,14 +2,14 @@ import Image from "next/image";
 import { useSelectedItems } from "@/app/Providers";
 import { MinusIcon } from "@heroicons/react/24/outline";
 
-export const SelectedTracksList = () => {
-  const { list, onItemClick: onTrackClick } = useSelectedItems();
+export const SelectedItemsList = () => {
+  const { list, onItemClick } = useSelectedItems();
   return (
     <ul role="list" className="mt-6 flex flex-col gap-2">
-      {list.map((track) => (
-        <li key={track.id}>
+      {list.map((item) => (
+        <li key={item.id}>
           <button
-            onClick={() => onTrackClick(track)}
+            onClick={() => onItemClick(item)}
             type="button"
             className="group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
@@ -17,18 +17,20 @@ export const SelectedTracksList = () => {
               <span className="block flex-shrink-0">
                 <Image
                   className="h-10 w-10 rounded-full"
-                  src={track.imageUrl}
+                  src={item.imageUrl}
                   width={64}
                   height={64}
-                  alt=""
+                  alt={
+                    item.type === "song" ? "Track Album Image" : "Artist Image"
+                  }
                 />
               </span>
               <span className="block min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-gray-900">
-                  {track.name}
+                  {item.name}
                 </span>
                 <span className="block truncate text-sm font-medium text-gray-500">
-                  {track.artist}
+                  {item.artist}
                 </span>
               </span>
             </span>

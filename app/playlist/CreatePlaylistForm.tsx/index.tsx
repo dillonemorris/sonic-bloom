@@ -9,7 +9,7 @@ import { SubmitButton } from "./SubmitButton";
 import { SuccessMessage } from "./SuccessMessage";
 import { useSelectedItems } from "../../Providers";
 import { TrackCountSelect } from "./TrackCountSelect";
-import { SelectedTracksList } from "./SelectedTracksList";
+import { SelectedItemsList } from "./SelectedItemsList";
 
 /**
  * TODO:
@@ -78,15 +78,15 @@ export const CreatePlaylistForm = () => {
           </div>
 
           {/* Tracks */}
-          <fieldset className="space-y-2 flex flex-col">
-            <legend className="sr-only">Tracks</legend>
+          <fieldset className="space-y-4 flex flex-col">
+            <legend className="sr-only">Seeds</legend>
             <div
               className="text-sm font-medium leading-6 text-gray-900"
               aria-hidden="true"
             >
-              Tracks
+              Seeds
             </div>
-            <SelectedTracksList />
+            <SelectedItemsList />
           </fieldset>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { MAX_ITEMS } from "./constants";
 type ItemsListProps = { items: Item[] };
 
 export const ItemsList = ({ items }: ItemsListProps) => {
-  const { onItemClick: onTrackClick, isSelected, list } = useSelectedItems();
+  const { onItemClick, isSelected, list } = useSelectedItems();
 
   return (
     <ul role="list" className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -18,7 +18,7 @@ export const ItemsList = ({ items }: ItemsListProps) => {
             <button
               type="button"
               disabled={!isSelected(item) && list.length === MAX_ITEMS}
-              onClick={() => onTrackClick(item)}
+              onClick={() => onItemClick(item)}
               className={`group flex w-full items-center justify-between space-x-3 rounded-full border border-gray-300 p-2 text-left shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-offset-2 ${
                 isSelected(item) &&
                 "bg-neutral-950 hover:bg-neutral-950 border-gray-950"
@@ -31,7 +31,11 @@ export const ItemsList = ({ items }: ItemsListProps) => {
                     src={item.imageUrl}
                     width={64}
                     height={64}
-                    alt="Track Album Image"
+                    alt={
+                      item.type === "song"
+                        ? "Track Album Image"
+                        : "Artist Image"
+                    }
                   />
                 </span>
                 <span className="block min-w-0 flex-1">
@@ -78,17 +82,4 @@ export const ItemsList = ({ items }: ItemsListProps) => {
       })}
     </ul>
   );
-};
-
-type Track = {
-  id: string;
-  name: string;
-  artist: string;
-  imageUrl: string;
-  type: string;
-};
-
-type Tracks = {
-  tracks: Track[];
-  isLoading: boolean;
 };
