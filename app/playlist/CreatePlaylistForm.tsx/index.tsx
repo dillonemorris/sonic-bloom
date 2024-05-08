@@ -4,12 +4,16 @@ import useSWR from "swr";
 import { useState } from "react";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
-import { useSession } from "next-auth/react";
 import { SubmitButton } from "./SubmitButton";
 import { SuccessMessage } from "./SuccessMessage";
-import { useSelectedTracks } from "../../Providers";
+import { useAccessToken, useSelectedItems } from "../../Providers";
 import { TrackCountSelect } from "./TrackCountSelect";
-import { SelectedTracksList } from "./SelectedTracksList";
+import { SelectedItemsList } from "./SelectedItemsList";
+
+/**
+ * TODO:
+ * Allow for adding tracks and/or artists to recommendations
+ */
 
 export const CreatePlaylistForm = () => {
   const [trackCount, setTrackCount] = useState("25");
@@ -73,15 +77,15 @@ export const CreatePlaylistForm = () => {
           </div>
 
           {/* Tracks */}
-          <fieldset className="space-y-2 flex flex-col">
-            <legend className="sr-only">Tracks</legend>
+          <fieldset className="space-y-4 flex flex-col">
+            <legend className="sr-only">Seeds</legend>
             <div
               className="text-sm font-medium leading-6 text-gray-900"
               aria-hidden="true"
             >
-              Tracks
+              Seeds
             </div>
-            <SelectedTracksList />
+            <SelectedItemsList />
           </fieldset>
         </div>
       </div>
@@ -154,24 +158,31 @@ const useUserId = () => {
 const useRecommendations = (count: string) => {
   const fetcher = useFetchWithToken();
   const token = useAccessToken();
-  const { list: seedTracks } = useSelectedTracks();
-  const seedTrackIds = seedTracks.map((track) => track.id);
+  const seedsParams = useSeedParams();
 
-  const { data } = useSWR(
-    [
-      `recommendations?seed_tracks=${seedTrackIds.join()}&limit=${count}`,
-      token,
-    ],
+  const { data } = useSWRImmutable(
+    [`recommendations?${seedsParams}&limit=${count}`, token],
     ([url, token]) => fetcher(url, token)
   );
 
   return data?.tracks;
 };
 
-const useAccessToken = (): string => {
-  const { data: session } = useSession();
-  //@ts-ignore
-  return session?.user.accessToken;
+const useSeedParams = () => {
+  const params = new URLSearchParams();
+  const { list } = useSelectedItems();
+  const artists = list.filter((item) => item.type === "artist");
+  const tracks = list.filter((item) => item.type === "song");
+
+  if (artists.length) {
+    params.append("seed_artists", artists.map((a) => a.id).join());
+  }
+
+  if (tracks.length) {
+    params.append("seed_tracks", tracks.map((t) => t.id).join());
+  }
+
+  return params.toString();
 };
 
 const useFetchWithToken = () => {

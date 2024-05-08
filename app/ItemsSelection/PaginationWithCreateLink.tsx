@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { useSelectedTracks } from "../Providers";
+import { useSelectedItems } from "../Providers";
 
-const MAX_SEEDS = 5;
+const MAX_SELECTED_ITEMS = 5;
 
 type Props = {
   pageIndex: number;
@@ -14,8 +14,7 @@ export const PaginationWithCreateLink = ({
   onNextClick,
   onPrevClick,
 }: Props) => {
-  const { list } = useSelectedTracks();
-  const hasSelectedTracks = list.length > 0;
+  const { list } = useSelectedItems();
 
   return (
     <nav
@@ -24,7 +23,7 @@ export const PaginationWithCreateLink = ({
     >
       <div className="hidden sm:block font-semibold">
         <p className="text-sm text-gray-700">
-          {list.length} of {MAX_SEEDS} tracks selected
+          {list.length} of {MAX_SELECTED_ITEMS} items selected
         </p>
       </div>
       <div className="flex flex-1 justify-between sm:justify-end">
@@ -48,9 +47,9 @@ export const PaginationWithCreateLink = ({
         <Link
           href="/playlist"
           className={`ml-3 top-6 right-6 inline-flex items-center gap-x-1.5 rounded-md px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${
-            hasSelectedTracks
+            list.length > 0
               ? "bg-neutral-950 text-white hover:bg-neutral-800 ring-neutral-950"
-              : null
+              : "pointer-events-none"
           }`}
         >
           Create Playlist
