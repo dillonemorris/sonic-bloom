@@ -14,20 +14,16 @@ export type ActiveTypeState = "artists" | "tracks";
 export const ItemsSelection = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [activeType, setActiveType] = useState<ActiveTypeState>("tracks");
-  const { items, isLoading } = useItems(pageIndex, activeType);
-
-  if (isLoading || !items.length) {
-    return (
-      <div className="mt-24">
-        <ItemsSkeleton />
-      </div>
-    );
-  }
+  const { items, isLoading } = useTopItems(pageIndex, activeType);
 
   return (
     <>
       <ActiveTypeTabs activeType={activeType} onTabClick={setActiveType} />
-      <ItemsList items={items} />
+      {isLoading || !items.length ? (
+        <ItemsSkeleton />
+      ) : (
+        <ItemsList items={items} />
+      )}
       <div className="mt-6">
         <PaginationWithCreateLink
           pageIndex={pageIndex}
@@ -44,19 +40,19 @@ type Items = {
   isLoading: boolean;
 };
 
-const useItems = (pageIndex: number, activeType: ActiveTypeState): Items => {
-  const { data, isLoading } = useItemsResponse(pageIndex, activeType);
+const useTopItems = (pageIndex: number, activeType: ActiveTypeState): Items => {
+  const { data, isLoading } = useTopItemsResponse(pageIndex, activeType);
+  const serializeItem = (item: any) => {
+    if (item.type === "track") {
+      return serializeTrack(item);
+    }
+
+    return serializeArtist(item);
+  };
+
   return {
     isLoading,
-    items: data?.items
-      ? data.items.map((item: any) => {
-          if (activeType === "artists") {
-            return serializeArtist(item);
-          }
-
-          return serializeTrack(item);
-        })
-      : [],
+    items: data?.items?.map(serializeItem) || [],
   };
 };
 
@@ -81,7 +77,10 @@ const serializeTrack = (track: any): Item => {
   };
 };
 
-const useItemsResponse = (pageIndex: number, activeType: ActiveTypeState) => {
+const useTopItemsResponse = (
+  pageIndex: number,
+  activeType: ActiveTypeState
+) => {
   const fetcher = useFetchWithToken();
   const offset = pageIndex * ITEMS_PER_PAGE;
   const token = useAccessToken();
