@@ -4,7 +4,6 @@ import useSWR from "swr";
 import { useState } from "react";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
-import { useSession } from "next-auth/react";
 import { SubmitButton } from "./SubmitButton";
 import { SuccessMessage } from "./SuccessMessage";
 import { useAccessToken, useSelectedItems } from "../../Providers";
@@ -159,18 +158,31 @@ const useUserId = () => {
 const useRecommendations = (count: string) => {
   const fetcher = useFetchWithToken();
   const token = useAccessToken();
-  const { list: seedTracks } = useSelectedItems();
-  const seedTrackIds = seedTracks.map((track) => track.id);
+  const seedsParams = useSeedParams();
 
-  const { data } = useSWR(
-    [
-      `recommendations?seed_tracks=${seedTrackIds.join()}&limit=${count}`,
-      token,
-    ],
+  const { data } = useSWRImmutable(
+    [`recommendations?${seedsParams}&limit=${count}`, token],
     ([url, token]) => fetcher(url, token)
   );
 
   return data?.tracks;
+};
+
+const useSeedParams = () => {
+  const params = new URLSearchParams();
+  const { list } = useSelectedItems();
+  const artists = list.filter((item) => item.type === "artist");
+  const tracks = list.filter((item) => item.type === "song");
+
+  if (artists.length) {
+    params.append("seed_artists", artists.map((a) => a.id).join());
+  }
+
+  if (tracks.length) {
+    params.append("seed_tracks", tracks.map((t) => t.id).join());
+  }
+
+  return params.toString();
 };
 
 const useFetchWithToken = () => {
