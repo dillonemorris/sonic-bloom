@@ -10,11 +10,6 @@ import { useAccessToken, useSelectedItems } from "../../Providers";
 import { TrackCountSelect } from "./TrackCountSelect";
 import { SelectedItemsList } from "./SelectedItemsList";
 
-/**
- * TODO:
- * Allow for adding tracks and/or artists to recommendations
- */
-
 export const CreatePlaylistForm = () => {
   const [trackCount, setTrackCount] = useState("25");
   const { trigger, data: playlist } = useCreatePlaylistMutation();
